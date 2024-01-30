@@ -1,6 +1,6 @@
 %% Part i)
 
-N = 250;
+N = 50;
 
 x = linspace(-1,1,N);
 
@@ -183,70 +183,89 @@ plot(M, sumOfSquares)
 hold on
 plot(M, error_all(4,:))
 legend('Test Error', 'Training Error')
-title('Error to Model Complexity (Polynomial Order M) (\sigma = 0.25)')
+title('Error to Model Complexity (Polynomial Order M) (\sigma = 0.16)')
 xlabel('Complexity (M)')
 ylabel('Least-Squares Error')
 
 %% Part 4
+
+% Idea: create lambda, vs error for 4 different variances
+
 clear;
 
-N = 250; % Data Points
+N = 30; % Data Points
 
-p = 3; % pol order
-
-variance = 0.15; % variance in the data
-
-lambdaAll = linspace(0,3,20); % Create array of 20 lamdas for testing
-
-errorLambdas = zeros(1, length(lambdaAll)); % error for the training data
-errorTest = zeros(1, length(lambdaAll)); % error for the test data
-
-for i = 1:length(lambdaAll)
-
-    [errorLambdas(i), errorTest(i)] = regularization(N, p, lambdaAll(i), variance); % Insert error in vectors
-
-end
-
-figure; % Plot vectors (error vs log(lambda)
-
-logLambdas = log(lambdaAll);
-
-hold on
-plot(logLambdas, errorLambdas);
-plot(logLambdas, errorTest);
-
-title('Obtained Error vs different regularization coefficients')
-ylabel('Error')
-xlabel('ln \lambda')
-legend('Training', 'Test')
-hold off
-
-
-[s, v, x, t, y] = regularization(N, p, exp(-1), variance);
-
-% Given lambda = 1/e, plot the graph
-
-figure;
-hold on
-plot(x, t, 'o')
-plot(x, y)
-title('Linear Fit of t = sin(\pi x), 3rd degree polynomial, \lambda = 1/e')
-
-hold off
-
-function [sumOfSquares, valSquares, x, testData, y] = regularization(N, p, lambda, variance) % Returns the sum of squares of the training data and the sum of sqaures of testing data
+p = 9; % pol order
 
 x = linspace(-1,1,N);
 
 testData = zeros(1, N);
 
-f = sin(pi*x);  % Generate Sin function
+varVec = [0.1, 0.2, 0.3, .4]; % Variance to be tested
 
-for i = 1:N
+for j = 1:length(varVec)
 
-    testData (i) = f(i) + sqrt(variance)*randn(1);  % Add noise to sin function
+
+    f = sin(pi*x);  % Generate Sin function
+
+    for i = 1:N
+
+        testData (i) = f(i) + sqrt(varVec(j))*randn(1);  % Add noise to sin function (training)
+
+    end
+
+    valData = zeros(1,N);
+
+    for i = 1:N
+
+        valData (i) = f(i) + sqrt(varVec(j))*randn(1);  % Add noise to sin function (test)
+
+    end
+
+    lambdaAll = -20:0.1:1; % Create array of 200 lambdas for testing
+
+    errorLambdas = zeros(1, length(lambdaAll)); % error for the training data
+    errorTest = zeros(1, length(lambdaAll)); % error for the test data
+
+    for i = 1:length(lambdaAll)
+
+        [errorLambdas(i), errorTest(i)] = regularization(N, x, testData, valData, p, exp(lambdaAll(i))); % Insert error in vectors
+
+    end
+
+    subplot(2, 2, j);
+
+    
+    hold on
+    plot(lambdaAll, errorLambdas);
+    plot(lambdaAll, errorTest);
+
+    subplot
+    str = sprintf('Obtained Error vs different regularization coefficients, \\sigma = %.2f', varVec(j).^2);
+    title(str)
+    ylabel('Error')
+    xlabel('ln \lambda')
+    legend('Training', 'Test')
+    hold off
 
 end
+
+
+[s, v, y] = regularization(N, x, testData, valData, p, exp(-2));
+
+% % Given lambda = e-2, plot the graph
+
+figure;
+hold on
+plot(x, testData, 'o')
+plot(x, y)
+title('Linear Fit of x = sin(\pi t), 9th degree polynomial, \lambda = e^{-2}')
+xlabel('t')
+ylabel('x');
+
+hold off
+
+function [sumOfSquares, valSquares, y] = regularization(N, x, testData, valData, p, lambda) % Returns the sum of squares of the training data and the sum of sqaures of testing data
 
 ridgeMatrix = ones(N, p + 1); % Build regression matrix
 
@@ -264,16 +283,6 @@ y = y';
 sumOfSquares = sum((y(:) - testData(:)).^2); % find sum of sqaures (expected - actual)
 
 % Build validation data
-
-valData = zeros(1, N);
-
-f = sin(pi*x);  % Generate Sin function
-
-for i = 1:N
-
-   valData (i) = f(i) + sqrt(variance)*randn(1);  % Add noise to sin function
-
-end
 
 valSquares = sum((y(:) - valData(:)).^2);
 
