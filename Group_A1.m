@@ -260,11 +260,77 @@ hold on
 plot(x, testData, 'o')
 plot(x, y)
 title('Linear Fit of x = sin(\pi t), 9th degree polynomial, \lambda = e^{-2}')
-xlabel('t')
+xlabel('t');
 ylabel('x');
 
 hold off
 
+%% Part 5
+lambval = -20:1:5;
+eval = [-5 -2 -1 1];
+N_iter = 25;
+fits = zeros(length(lambval),N_iter,N);
+indexes = zeros(1,4);
+true_m = sin(pi*x);
+figure;
+h=1;
+for iterations = 1:N_iter
+    valData = zeros(1,N);
+    for i = 1:N
+        valData (i) = f(i) + sqrt(0.4)*randn(1);  % Add noise to sin function (test)
+    end
+    o = 1;
+    b = 1;
+    h = 1;
+        for lv = 1:length(lambval)
+            [s, v, y] = regularization(N, x, valData, valData, 4, exp(lambval(lv))); % Varying test model data; validation data not needed
+            fits(h,iterations,:) = y; % saving fits for later
+            h= h+1;
+            if ismember(lambval(lv),eval)
+                indexes(b) = lv;
+                disp(lv)
+                subplot(2,2,o)
+                str = sprintf('Linear Fit of x = sin(\\pi t), 4th degree polynomial, \\lambda = %.1f',lambval(lv));
+                plot(x,y)
+                title(str)
+                o = o +1;
+                b = b + 1;
+                ylim([-1.6,1.6])
+                hold on
+            end
+        end
+
+end
+hold off
+
+figure 
+average_fit = mean(fits,2); % Find average fit
+%varia = variance(fits,2);
+for k = 1:4
+    subplot(2,2,k)
+    str = sprintf('Average Linear Fit of x = sin(\\pi t), 4th degree polynomial, \\lambda = %.1f',eval(k));
+    plot(x,squeeze(average_fit(indexes(k),1,:)))
+    title(str)
+    hold on
+    plot(x,sin(pi*x))
+    legend("Average Fit","Original Signal", location = "northwest")
+    ylim([-1.2,1.2])
+end
+hold off
+
+average_fit = squeeze(average_fit);
+variance = squeeze(mean(var(fits,0,2),3));
+bias2 = sum((average_fit - true_m(ones(1,26),:)).^2,2)/30;
+
+figure
+plot(lambval,bias2)
+hold on
+plot(lambval,variance)
+plot(lambval, bias2+variance)
+xlabel("ln \lambda")
+legend("Bias^2","Variance", "Bias^2 + Variance")
+title("Bias-Variance Tradeoff")
+% FUNCTION for 4 and 5
 function [sumOfSquares, valSquares, y] = regularization(N, x, testData, valData, p, lambda) % Returns the sum of squares of the training data and the sum of sqaures of testing data
 
 ridgeMatrix = ones(N, p + 1); % Build regression matrix
@@ -288,7 +354,7 @@ valSquares = sum((y(:) - valData(:)).^2);
 
 end
 
-% Literally just adding this for no reason"
+
 
 
 
