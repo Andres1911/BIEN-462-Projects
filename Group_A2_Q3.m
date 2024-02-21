@@ -6,15 +6,19 @@ x2 = randn(1,5000); %Gaussian uniformly distributed white noise with unit varian
 [r1,lag] = xcorr(x1,64);
 [r2,lag] = xcorr(x2,64);
 
+plot(x1);
 
 figure
 subplot(2,2,1)
 stem(lag,r1)
 title("Autocorrelation of a uniformly distributed random signal")
+xlabel('lag')
 
-subplot(2,2,2
-stem(lag,r2))
+
+subplot(2,2,2)
+stem(lag,r2)
 title("Autocorrelation of a normally distributed random signal")
+xlabel('lag')
 
 % The theoretical autocorrelation of a white noise signal is equal to the variance squared times the dirac delta function.
 % For the first signal, the variance was found to be ~ 4, while the second has a variance of 1. 
@@ -34,13 +38,16 @@ y2 = filter(b,[1, -a],x2);
 r3 = xcorr(y1,64);
 r4 = xcorr(y2,64);
 
+
 subplot(2,2,3)
 stem(lag,r3)
 title("Autocorrelation of filtered uniformly distributed random signal")
+xlabel('lag')
 
 subplot(2,2,4)
 stem(lag,r4)
 title("Autocorrelation of filtered normally dist. random signal")
+xlabel('lag')
 
 %% Question 3c
 
