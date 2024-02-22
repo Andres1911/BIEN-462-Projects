@@ -149,6 +149,64 @@ ylabel('Coherence')
 hold off
 
 
+%% Q4 c
+
+bloodPressure_d = detrend(bloodPressure(:));
+flowVelocity_d = detrend(flowVelocity(:));
+
+% Segment for first 6 minutes
+bp1 = bloodPressure_d(1:360); 
+fv1 = flowVelocity_d(1:360);
+
+% Segment for 30-36 minute interval
+bp2 = bloodPressure_d(1800:2160);
+fv2 = flowVelocity_d(1800:2160);
+
+% Entire segment of data (making sure of same length)
+bp = bloodPressure_d(1:2398);
+fv = flowVelocity_d(1:2398);
+
+data = iddata(fv, bp, 1); % 2400s is the sampling time
+
+% Estimate the impulse response model, using impulseest
+sys = impulseest(data);
+
+% Plotting the sytem's impulse response 
+
+figure;
+[impulseResponse, time] = impulse(sys);
+plot(time*60, impulseResponse)
+
+title('Estimated Impulse Response');
+xlabel('Time(s)');
+ylabel('Amplitude');
+
+% Plotting frequency response:
+figure; 
+bode(sys);
+title('Frequency Response of Estimated Impulse Response');
+
+%% Q4 d
+
+[H, f] = tfestimate(bp, fv, [], [], [], 1); % The last argument is the sampling frequency
+
+% Plotting magnitude response:
+figure;
+plot(f, 20*log10(abs(H)));
+title('System Magnitude Response');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude (dB)');
+
+
+% Plotting phase response:
+figure;
+plot(f, angle(H));
+title("System Phase Response");
+xlabel("Frequency (Hz)");
+ylabel('Phase (Radians)');
+
+
+
 
 
 
