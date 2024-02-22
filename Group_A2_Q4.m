@@ -188,22 +188,28 @@ title('Frequency Response of Estimated Impulse Response');
 
 %% Q4 d
 
+%% Q4 d
+
 [H, f] = tfestimate(bp, fv, [], [], [], 1); % The last argument is the sampling frequency
 
 % Plotting magnitude response:
 figure;
-plot(f, 20*log10(abs(H)));
+f_rad_s = f * 2 * pi;
+semilogx(f_rad_s, 20*log10(abs(H)));
 title('System Magnitude Response');
-xlabel('Frequency (Hz)');
+xlabel('Frequency (rad/s)');
 ylabel('Magnitude (dB)');
 
 
 % Plotting phase response:
 figure;
-plot(f, angle(H));
+H_phase_deg = angle(H)*180 / pi;
+semilogx(f_rad_s, H_phase_deg);
+
 title("System Phase Response");
-xlabel("Frequency (Hz)");
-ylabel('Phase (Radians)');
+xlabel("Frequency (rad/s)");
+ylabel('Phase (deg)');
+
 
 
 
