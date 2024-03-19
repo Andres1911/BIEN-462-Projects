@@ -1,37 +1,50 @@
 % BIEN 462 Assignment 3 part i)
 clear;
 time_step = 0.001;
-tspan = 0:time_step:20;
+tspan = 0:time_step:200;
 
 a = [0.02, 0.02, 0.1, 0.1];
-b = [0.2, 0.2, 0.2, 0.25,];
+b = [0.2, 0.2, 0.2, 0.25];
 c = [-65, -55, -65, -65];
 d = [8, 4, 2, 2];
-
+current = 20;
 
 
 for i = 1:length(a)
 
     subplot(2,2, i)
-    [tspan, V] = DiscreteModel(a(i), b(i), c(i), d(i));
+    [tspan, V] = DiscreteModel(a(i), b(i), c(i), d(i), current);
+    
+    hold on 
     plot(tspan, V)
-
+    xlabel('Time (ms)')
+    ylabel('Membrane potential (mV)')
+    
+    if i == 1
+        title('Regular Spiking')
+    elseif i == 2
+        title('Intrinsically Bursting')
+    elseif i == 3
+        title('Fast Spiking')
+    else 
+        title('Low-Threshold Spiking')
+    end
+    hold off
 end
 
 
-function [tspan, V] = DiscreteModel(a, b, c, d)
+function [tspan, V] = DiscreteModel(a, b, c, d, current)
 
 time_step = 0.001;
-tspan = 0:time_step:20;
+tspan = 0:time_step:150;
 
 pulseWidth = 0.9;
-currentAmplitude = 20;
+currentAmplitude = current;
 n = length(tspan);
 first = (1-pulseWidth)*n;
 
 I = zeros(1,n);
 I(first:end) = currentAmplitude;
-I(10000:11000) = 7A3Q4i.m0;
 
 V = -70*ones(1,n);
 U = [zeros(1,n)];
@@ -50,7 +63,3 @@ end
 plot(tspan, V)
 
 end 
-
-% [t,y] = ode45(@izhikevich, tspan, conditions(), [], a, b, c, d, I);
-% figure
-% plot(t,y)
