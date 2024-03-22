@@ -1,7 +1,7 @@
 % BIEN 462 Assignment 3 part i)
 clear;
 time_step = 0.001;
-tspan = 0:time_step:200;
+tspan = 0:time_step:300;
 
 a = [0.02, 0.02, 0.1, 0.1];
 b = [0.2, 0.2, 0.2, 0.25];
@@ -36,7 +36,7 @@ end
 function [tspan, V] = DiscreteModel(a, b, c, d, current)
 
 time_step = 0.001;
-tspan = 0:time_step:150;
+tspan = 0:time_step:300;
 
 pulseWidth = 0.9;
 currentAmplitude = current;
@@ -45,6 +45,11 @@ first = (1-pulseWidth)*n;
 
 I = zeros(1,n);
 I(first:end) = currentAmplitude;
+
+if b == 0.25
+    I(first:end) = 0.12;
+    I(10000:15000) = 20;
+end
 
 V = -70*ones(1,n);
 U = [zeros(1,n)];
