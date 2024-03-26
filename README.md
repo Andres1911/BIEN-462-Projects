@@ -1,1 +1,1 @@
-Hello, I'm trying to set this up. Inside should be a matlab file all the work that has been done so far
+Contained in this GitHub Repository is a collection of assignments and the project for the course BIEN 462
