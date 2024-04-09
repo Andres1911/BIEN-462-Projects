@@ -34,14 +34,14 @@ else:
 #Divide data into strides
     #Idea: Determine time indices for each stride
     #Afterwards, extract and place into array
-tgrounded = []
+""" tgrounded = []
 for num,data in enumerate(alldata):
     tgrounded.append(np.zeros(len(data)))
     for time, force in enumerate(data):
         if force[18] > 80:
-            tgrounded[num][int(force[0])] = 1
+            tgrounded[num][int(force[0])] = 1 """
 #print(tgrounded[3])
-allsteps=[]
+""" allsteps=[]
 for mask in tgrounded:
     start = 0
     steps = []
@@ -51,7 +51,7 @@ for mask in tgrounded:
             steps.append((start,end))
         if mask[i] == 1 and mask[i-1] == 0:
             start = i
-    allsteps.append(steps)
+    allsteps.append(steps) """
 
 #Validating decomposition of data into strides 
 """ fig, axs = plt.subplots(2)
@@ -64,7 +64,7 @@ fig.suptitle('PD vs Control')
 plt.show() """
 
 #Peak force for each stride and variability
-for num,intervals in enumerate(allsteps):
+""" for num,intervals in enumerate(allsteps):
     peaks = []
     peak_totals = []
     intervals.pop(0)
@@ -75,7 +75,7 @@ for num,intervals in enumerate(allsteps):
     peaks.append(np.max(peak_totals))
     np.savetxt("csvforce\MaxTotRF" + filenames[num] +".csv",peak_totals)
     #Peak total force for each stride, find variability
-    np.savetxt("csvforce\MaxRF"+ filenames[num] +".csv",peaks)
+    np.savetxt("csvforce\MaxRF"+ filenames[num] +".csv",peaks) """
     #Cross correlating between feet: Between columns 1-5,2-6,3-7,4-8, etc.
 
 """ corr = signal.correlate(alldata[0][:,2],alldata[0][:,10])
@@ -84,23 +84,31 @@ plt.plot(lags,corr)
 plt.show() """
 #Get center of pressure measurements and graph displacement of cop during stride. Find variability
 #FFT 
-""" N=8192
-yf1 = fft(alldata[0][500:8692,19]-np.mean(alldata[0][500:8692,19])) # Remove mean to get rid of strong peak at 0 hz
-yf2 = fft(alldata[1][500:8692,19]-np.mean(alldata[1][500:8692,19]))
-xf = fftfreq(8192,0.01)[:8192//2] """
-""" x= np.linspace(0,81.92,0.01)
-yf1 = np.sin() """
-
-""" 
-fig, axs = plt.subplots(2)
-axs[0].plot(xf, 2.0/N * 20*np.log10(np.abs(yf1[0:N//2])))
-axs[0].set_title('Control')
-axs[1].plot(xf, 2.0/N * 20*np.log10(np.abs(yf2[0:N//2])))
-axs[1].set_title('PD')
-fig.suptitle('PD vs Control')
-plt.grid()
-plt.show() """
-
 #Welch PSD
 
-#get ratio of next harmonics
+def find(val,arr):
+    return np.argmin(np.abs(arr-val))
+
+N=8192
+allharmonics = []
+for feature in alldata:
+    xf, yf = signal.welch(feature[500:8692,19],100,"hamming",nperseg=N/4,nfft=N)
+    #Find peaks
+    peaks, properties = signal.find_peaks(20*np.log(yf[:500]), prominence = 30)
+    # Get ratio of harmonics vs fundamental amplitude
+    fundamental = 20*np.log(yf[peaks[0]])
+    fundfreq = xf[peaks[0]]
+    #print(peaks)
+    harmrat = [20*np.log(yf[find(fundfreq*2,xf[peaks[0]:500])+peaks[0]])/fundamental,20*np.log(yf[find(fundfreq*3,xf[peaks[0]:500])+peaks[0]])/fundamental,20*np.log(yf[find(fundfreq*4,xf[peaks[0]:500])+peaks[0]])/fundamental,20*np.log(yf[find(fundfreq*5,xf[peaks[0]:500])+peaks[0]])/fundamental]
+    allharmonics.append(harmrat)
+    print((fundfreq,xf[find(fundfreq*2,xf[peaks[0]:500])+peaks[0]],xf[find(fundfreq*3,xf[peaks[0]:500])+peaks[0]],xf[find(fundfreq*4,xf[peaks[0]:500])+peaks[0]]))
+
+
+with open(r"harmonics/results2.txt", 'w') as fp:
+    for n,item in enumerate(allharmonics):
+        # write each item on a new line
+        fp.write(filenames[n]+ "%s\n" % item)
+    print('Done')
+
+
+
